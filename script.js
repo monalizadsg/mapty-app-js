@@ -18,16 +18,15 @@ class Workout {
     // prettier-ignore
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    console.log(this.date.getMonth(), this.date.getDate());
-
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
   }
 
-  click() {
-    this.clicks++;
-  }
+  // for testing purposes only
+  // click() {
+  //   this.clicks++;
+  // }
 }
 
 class Running extends Workout {
@@ -86,7 +85,13 @@ class App {
   #workouts = [];
 
   constructor() {
+    // Get user's position
     this._getPosition();
+
+    // Get data from localStorage
+    this._getLocalStorage();
+
+    // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -121,6 +126,9 @@ class App {
 
     // handle click on map
     this.#map.on('click', this._showForm.bind(this));
+
+    // render workout marker
+    this.#workouts.forEach(workout => this._renderWorkoutMarker(workout));
   }
 
   _showForm(mapE) {
@@ -196,7 +204,6 @@ class App {
 
     // Add new object to workout array
     this.#workouts.push(workout);
-    console.log(workout);
 
     // Render workout on map as marker
     this._renderWorkoutMarker(workout);
@@ -206,6 +213,9 @@ class App {
 
     // Hide + clear input fields
     this._hideForm();
+
+    // Set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -293,8 +303,31 @@ class App {
       },
     });
 
-    // this is just a test to show you that you can use the public interface
-    workout.click();
+    // for testing only to show you that you can use the public interface
+    // this will cause a problem bec we are now using localStorage
+    // all the objs from localStorage will not inherit its parent prototypes just like before
+    // workout.click();
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    // render workout
+    this.#workouts.forEach(workout => this._renderWorkout(workout));
+  }
+
+  // public interface
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
